@@ -1,0 +1,42 @@
+[
+    {
+      "fullname": "Okonkwo Chidera Precious",
+      "session": "2024/2025",
+      "department": "Computer Engineering",
+      "jambReg": "2024118293",
+      "email": "chidera.okonkwo@unn.edu.ng",
+      "status": "Not Registered"
+    },
+    {
+      "fullname": "Eze Emmanuel Tochukwu",
+      "session": "2024/2025",
+      "department": "Electrical Engineering",
+      "jambReg": "2024128471",
+      "email": "emmanuel.eze@unn.edu.ng",
+      "status": "Approved"
+    },
+    {
+      "fullname": "Ngozi Blessing Okafor",
+      "session": "2024/2025",
+      "department": "Mechanical Engineering",
+      "jambReg": "2024109284",
+      "email": "ngozi.okafor@unn.edu.ng",
+      "status": "Declined"
+    },
+    {
+      "fullname": "Ifeanyi David Nwosu",
+      "session": "2024/2025",
+      "department": "Civil Engineering",
+      "jambReg": "2024137291",
+      "email": "ifeanyi.nwosu@unn.edu.ng",
+      "status": "Registered"
+    },
+    {
+      "fullname": "Amaka Grace Ugwu",
+      "session": "2024/2025",
+      "department": "Computer Engineering",
+      "jambReg": "2024156372",
+      "email": "amaka.ugwu@unn.edu.ng",
+      "status": "Approved"
+    }
+  ]

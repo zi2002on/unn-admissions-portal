@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faculty Officer Login • UNN</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0b6623, #1b8c3a); margin:0; height:100vh; display:flex; align-items:center; justify-content:center; }
+    .login-box { background:white; padding:60px 50px; border-radius:20px; box-shadow:0 25px 60px rgba(0,0,0,0.3); width:400px; text-align:center; }
+    .logo { font-size:60px; font-weight:bold; color:#0b6623; margin-bottom:10px; }
+    h1 { color:#0b6623; margin:0 0 10px; font-size:26px; }
+    p { color:#555; margin-bottom:35px; font-size:16px; }
+    input { width:100%; padding:18px 20px; margin:14px 0; border:2px solid #ddd; border-radius:50px; font-size:20px; text-align:center; outline:none; transition:0.3s; letter-spacing:8px; }
+    input:focus { border-color:#0b6623; box-shadow:0 0 15px rgba(11,102,35,0.2); }
+    button { width:100%; padding:18px; background:#0b6623; color:white; border:none; border-radius:50px; font-size:19px; font-weight:bold; cursor:pointer; margin-top:25px; transition:0.3s; }
+    button:hover { background:#094d1c; transform:scale(1.02); }
+    .msg { margin-top:20px; color:#d32f2f; font-weight:bold; font-size:17px; }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <div class="logo">UNN</div>
+    <h1>Faculty Officer Login</h1>
+    <p>Admission Clearance Portal</p>
+
+    <input type="email" id="email" placeholder="Faculty Email" required>
+
+    <input type="text" id="pin" placeholder="Enter 5-Digit PIN" maxlength="5" pattern="\d{5}" 
+           oninput="this.value=this.value.replace(/[^0-9]/g,'')" required>
+
+    <button onclick="login()">LOGIN SECURELY</button>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <script>
+    // CHANGE THESE TO YOUR REAL CREDENTIALS
+    const validEmail = "officer@unn.edu.ng";     // ← Change to your email
+    const validPIN   = "12345";                  // ← Change to your 5-digit PIN
+
+    function login() {
+      const email = document.getElementById("email").value.trim();
+      const pin   = document.getElementById("pin").value;
+      const msg   = document.getElementById("msg");
+
+      if (!email || pin.length !== 5) {
+        msg.textContent = "Please enter valid email and 5-digit PIN";
+        return;
+      }
+
+      if (validOfficer) {
+  // This forces the correct origin so localStorage works
+  localStorage.setItem("officerLoggedIn", "true");
+  window.location.href = "http://localhost:5000/dashboard.html";
+} else {
+  msg.textContent = "Wrong Email or PIN. Access Denied.";
+  document.getElementById("pin").value = "";
+}
+    }
+
+    // Allow Enter key to login
+    document.addEventListener("keypress", e => {
+      if (e.key === "Enter") login();
+    });
+  </script>
+</body>
+</html>

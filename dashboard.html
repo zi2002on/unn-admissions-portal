@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UNN Faculty Officer Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {font-family: 'Segoe UI', sans-serif; background:#f4f6f9; margin:0; padding:20px;}
+    .container {max-width:1300px; margin:auto; background:white; border-radius:18px; box-shadow:0 15px 50px rgba(0,0,0,0.12); overflow:hidden;}
+    header {background:linear-gradient(135deg,#0b6623,#1b8c3a); color:white; padding:35px; text-align:center;}
+    header h1 {margin:0; font-size:32px;}
+    .stats {display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:25px; padding:40px;}
+    .card {background:#fff; padding:30px; border-radius:15px; text-align:center; box-shadow:0 6px 20px rgba(0,0,0,0.1); cursor:pointer; transition:0.3s;}
+    .card:hover {transform:scale(1.05); box-shadow:0 12px 30px rgba(0,0,0,0.15);}
+    .card h2 {margin:0; font-size:38px; color:#0b6623;}
+    .card p {margin:10px 0 0; font-size:17px; color:#555;}
+
+    .modal {display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center;}
+    .modal-content {background:white; width:90%; max-width:900px; max-height:90vh; overflow-y:auto; border-radius:15px; padding:30px; position:relative;}
+    .close {position:absolute; top:15px; right:25px; font-size:30px; cursor:pointer; color:#aaa;}
+    .close:hover {color:#000;}
+    table {width:100%; border-collapse:collapse; margin-top:15px;}
+    th, td {padding:12px; text-align:left; border-bottom:1px solid #ddd;}
+    th {background:#0b6623; color:white;}
+    .btn {padding:8px 16px; border:none; border-radius:6px; color:white; cursor:pointer; margin:0 5px;}
+    .approve {background:#0b6623;}
+    .decline {background:#d32f2f;}
+    .file-link {color:#1976d2; text-decoration:underline;}
+  </style>
+</head>
+<body>
+
+<script>
+// SECURITY CHECK
+if (localStorage.getItem("officerLoggedIn") !== "true") {
+  window.location.href = "officer-login.html";
+}
+</script>
+
+<div class="container">
+  <header>
+    <h1>Faculty Officer Dashboard</h1>
+    <p>University of Nigeria, Nsukka | Admission Clearance Portal</p>
+  </header>
+
+  <div class="stats">
+    <div class="card" onclick="showList('all')">
+      <h2 id="totalAdmitted">0</h2><p>Total Admitted (Submitted)</p>
+    </div>
+    <div class="card" onclick="showList('registered')">
+      <h2 id="registered">0</h2><p>Registered</p>
+    </div>
+    <div class="card" onclick="showList('notReg')">
+      <h2 id="notReg">0</h2><p>Not Registered</p>
+    </div>
+    <div class="card" onclick="showList('approved')">
+      <h2 id="approved">0</h2><p>Approved</p>
+    </div>
+    <div class="card" onclick="showList('declined')">
+      <h2 id="declined">0</h2><p>Declined</p>
+    </div>
+  </div>
+
+  <div class="chart-area" style="padding:50px; text-align:center;">
+    <h2 style="color:#333;">Admission Status Overview</h2>
+    <canvas id="mainChart" width="600" height="400"></canvas>
+  </div>
+</div>
+
+<!-- MODAL POP-UP -->
+<div id="myModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="document.getElementById('myModal').style.display='none'">×</span>
+    <h2 id="modalTitle" style="color:#0b6623; text-align:center;"></h2>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+let students = [];
+let chart = null;
+
+fetch('submissions.json')
+  .then(r => r.json())
+  .then(data => {
+    students = data.map(s => ({...s, status: s.status || "Not Registered"}));
+    updateAll();
+  });
+
+function updateAll() {
+  const total = students.length;
+  const reg = students.filter(s => s.status !== "Not Registered").length;
+  const not = students.filter(s => s.status === "Not Registered").length;
+  const app = students.filter(s => s.status === "Approved").length;
+  const dec = students.filter(s => s.status === "Declined").length;
+
+  document.getElementById("totalAdmitted").textContent = total;
+  document.getElementById("registered").textContent = reg;
+  document.getElementById("notReg").textContent = not;
+  document.getElementById("approved").textContent = app;
+  document.getElementById("declined").textContent = dec;
+
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById('mainChart'), {
+    type: 'pie',
+    data: {
+      labels: ['Registered', 'Not Registered', 'Approved', 'Declined'],
+      datasets: [{ data: [reg, not, app, dec],
+        backgroundColor: ['#4CAF50', '#FF9800', '#2196F3', '#F44336'],
+        borderWidth: 4, borderColor: '#fff' }]
+    },
+    options: {responsive:true, plugins:{legend:{position:'bottom'}}}
+  });
+}
+
+function showList(type) {
+  let title = "";
+  let html = "<table><tr><th>Name</th><th>JAMB Reg No</th>";
+
+  if (type === 'registered') {
+    title = "Registered Students - Full Details";
+    html += "<th>Email</th><th>Files</th><th>Action</th></tr>";
+    students.filter(s => s.status !== "Not Registered").forEach(s => {
+      html += `<tr>
+        <td>${s.fullname || '-'}</td>
+        <td>${s.jambReg || '-'}</td>
+        <td>${s.email || '-'}</td>
+        <td>${Object.keys(s.files||{}).map(f => 
+          `<a href="uploads/${s.files[f][0]}" target="_blank" class="file-link">${f.replace(/_/g,' ')}</a>`
+        ).join('<br>')}</td>
+        <td>
+          <button class="btn approve" onclick="setStatus('${s.jambReg}','Approved')">Approve</button>
+          <button class="btn decline" onclick="setStatus('${s.jambReg}','Declined')">Decline</button>
+        </td>
+      </tr>`;
+    });
+
+  } else if (type === 'all') {
+    title = "All Admitted Students";
+    html += "</tr>";
+    students.forEach(s => {
+      html += `<tr><td>${s.fullname || '-'}</td><td>${s.jambReg || '-'}</td></tr>`;
+    });
+
+  } else if (type === 'notReg') {
+    title = "Students Yet to Register";
+    html += "</tr>";
+    students.filter(s => s.status === "Not Registered").forEach(s => {
+      html += `<tr><td>${s.fullname || '-'}</td><td>${s.jambReg || '-'}</td></tr>`;
+    });
+
+  } else if (type === 'approved') {
+    title = "Approved Students";
+    html += "<th>Status</th></tr>";
+    students.filter(s => s.status === "Approved").forEach(s => {
+      html += `<tr><td>${s.fullname}</td><td>${s.jambReg}</td><td><strong style="color:green;">Approved</strong></td></tr>`;
+    });
+
+  } else if (type === 'declined') {
+    title = "Declined Students";
+    html += "<th>Status</th></tr>";
+    students.filter(s => s.status === "Declined").forEach(s => {
+      html += `<tr><td>${s.fullname}</td><td>${s.jambReg}</td><td><strong style="color:red;">Declined</strong></td></tr>`;
+    });
+  }
+
+  html += "</table>";
+  document.getElementById("modalTitle").innerHTML = title;
+  document.getElementById("modalBody").innerHTML = html || "<p>No students in this category yet.</p>";
+  document.getElementById("myModal").style.display = "flex";
+}
+
+function setStatus(jamb, newStatus) {
+  const stu = students.find(s => s.jambReg === jamb);
+  if (stu) {
+    stu.status = newStatus;
+    fetch('save.php', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(students)})
+      .then(() => { alert(`Status updated to ${newStatus}`); updateAll(); showList(newStatus.toLowerCase() === 'approved' ? 'approved' : 'declined'); });
+  }
+}
+</script>
+</body>
+</html>
